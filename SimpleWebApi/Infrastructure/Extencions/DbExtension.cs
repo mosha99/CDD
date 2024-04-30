@@ -25,7 +25,7 @@ public static class DbExtension
     }
 
     public static async Task<ListResult<TDto>> ToListResultAsync<TAggregate, TDto, TFilter>
-        (this IQueryable<TAggregate> List, BaseListQuery<TAggregate, TFilter> paging, ICustomMapper mapper, CancellationToken cancellationToken)
+        (this IQueryable<TAggregate> List, IBaseListQuery<TAggregate, TFilter> paging, ICustomMapper mapper, CancellationToken cancellationToken)
         where TFilter : BaseFilter<TAggregate>
     {
         var result = new ListResult<TDto>();
@@ -59,7 +59,7 @@ public static class DbExtension
             throw;
         }
     }
-    public static IQueryable<TAggregate> SetPagination<TAggregate, TFilter>(this IQueryable<TAggregate> queryable, BaseListQuery<TAggregate, TFilter> pagingCondition, out Task<int> countQuery)
+    public static IQueryable<TAggregate> SetPagination<TAggregate, TFilter>(this IQueryable<TAggregate> queryable, IBaseListQuery<TAggregate, TFilter> pagingCondition, out Task<int> countQuery)
         where TFilter : BaseFilter<TAggregate>
 
     {
@@ -82,7 +82,7 @@ public static class DbExtension
         }
     }
 
-    private static IQueryable<TAggregate> SetOrder<TAggregate, TFilter>(IQueryable<TAggregate> queryable, BaseListQuery<TAggregate, TFilter> pagingCondition)
+    private static IQueryable<TAggregate> SetOrder<TAggregate, TFilter>(IQueryable<TAggregate> queryable, IBaseListQuery<TAggregate, TFilter> pagingCondition)
         where TFilter : BaseFilter<TAggregate>
 
     {
@@ -97,7 +97,7 @@ public static class DbExtension
         return queryable;
     }
 
-    private static IQueryable<TAggregate> SetFilter<TAggregate, TFilter>(IQueryable<TAggregate> queryable, BaseListQuery<TAggregate, TFilter> pagingCondition)
+    private static IQueryable<TAggregate> SetFilter<TAggregate, TFilter>(IQueryable<TAggregate> queryable, IBaseListQuery<TAggregate, TFilter> pagingCondition)
         where TFilter : BaseFilter<TAggregate>
 
     {

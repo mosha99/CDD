@@ -8,9 +8,11 @@ public interface IWriteRepository
     public Task<int> SaveAsync(CancellationToken cancellationToken = new CancellationToken());
 }
 
-public interface IWriteRepository<in TAggregate, TId> : IWriteRepository
+public interface IWriteRepository<TAggregate, TId> : IWriteRepository
     where TId : IdentityBase, IIdentityCreator
     where TAggregate : Aggregate<TId>
 {
     public Task<TId> AddAsync(TAggregate aggregate, CancellationToken cancellationToken = new CancellationToken());
+    public TAggregate Update(TAggregate aggregate);
+    public Task<TId> RemoveAsync(TId id, CancellationToken cancellationToken = new CancellationToken());
 }

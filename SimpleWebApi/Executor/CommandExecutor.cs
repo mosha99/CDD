@@ -2,6 +2,8 @@
 using System.Text.Json;
 using MediatR;
 using SimpleWebApi.Infrastructure.Exceptions;
+using SimpleWebApi.Infrastructure.DomainInfra.IdBase;
+using System.Text.Json.Serialization;
 
 namespace SimpleWebApi.Executor;
 
@@ -9,7 +11,7 @@ public class CommandExecutor(ISender sender)
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
     };
     public async Task<object?> Execute(string commandName, JsonElement request, HttpRequest httpRequest)
     {

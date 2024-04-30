@@ -2,7 +2,7 @@
 
 namespace SimpleWebApi.Infrastructure.Exceptions;
 
-public class NotFoundException(string? message = null) : Exception(message), IException
+public class NotFoundException(string? message = "object/objects Not Found") : Exception(message), IException
 {
     public int GetStatsCode() => 404;
 

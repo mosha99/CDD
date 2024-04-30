@@ -1,7 +1,10 @@
-﻿namespace SimpleWebApi.Infrastructure.DomainInfra.IdBase;
+﻿using System.Text.Json.Serialization;
+
+namespace SimpleWebApi.Infrastructure.DomainInfra.IdBase;
 
 public abstract class IdentityBase(long id)
 {
+    [JsonPropertyName("Id")]
     public long Id { get; private set; } = id;
 
     public static string GetSequenceBase<TId>()

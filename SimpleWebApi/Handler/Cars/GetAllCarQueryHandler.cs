@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using SimpleWebApi.Domain.BicycleDomain.Entities;
+ 
 using SimpleWebApi.Domain.CarDomain.Entities;
 using SimpleWebApi.Dto;
 using SimpleWebApi.Filters;

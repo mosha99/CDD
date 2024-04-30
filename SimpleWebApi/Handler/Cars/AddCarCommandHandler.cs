@@ -1,9 +1,9 @@
 ﻿using MediatR;
-using SimpleWebApi.Domain.BicycleDomain.Entities;
+ 
 using SimpleWebApi.Domain.CarDomain.Entities;
 using SimpleWebApi.Infrastructure.DomainInfra.RepositoryBase.Interfaces;
 using SimpleWebApi.Infrastructure.Mapper;
-using SimpleWebApi.Requests.Bicycles;
+ 
 using SimpleWebApi.Requests.Cars;
 
 namespace SimpleWebApi.Handler.Cars;

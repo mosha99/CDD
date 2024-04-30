@@ -25,6 +25,11 @@ public class FullRepository<TAggregate, TId> : IFullRepository<TAggregate, TId>
     public Task<TId> AddAsync(TAggregate aggregate, CancellationToken cancellationToken = new CancellationToken())
         => _writeRepository.Value.AddAsync(aggregate, cancellationToken);
 
+    public TAggregate Update(TAggregate aggregate)
+        => _writeRepository.Value.Update(aggregate);
+
+    public Task<TId> RemoveAsync(TId id, CancellationToken cancellationToken = new CancellationToken())
+        => _writeRepository.Value.RemoveAsync(id, cancellationToken);
     public Task<int> SaveAsync(CancellationToken cancellationToken = new CancellationToken())
         => _writeRepository.Value.SaveAsync(cancellationToken);
 

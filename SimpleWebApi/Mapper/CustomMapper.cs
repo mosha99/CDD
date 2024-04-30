@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using SimpleWebApi.Infrastructure.Mapper;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SimpleWebApi.Mapper;
 
@@ -20,8 +21,13 @@ public class CustomMapper
 
         public TRight MapTo<TLeft, TRight>(TLeft entity)
         {
-           return mapper.Map<TLeft, TRight>(entity);
-            
+            if (entity is ICreator<TRight> creator) return creator.Create();
+            return mapper.Map<TLeft, TRight>(entity);
+        }
+
+        public TResult MapTo<TResult>(object entity)
+        {
+            return (TResult)mapper.Map(entity, entity.GetType(), typeof(TResult));
         }
     }
 }

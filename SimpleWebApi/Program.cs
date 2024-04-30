@@ -1,7 +1,13 @@
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Xml.XPath;
+using AutoMapper.Internal;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -10,10 +16,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using SimpleWebApi.Database;
-using SimpleWebApi.Domain.BicycleDomain.Entities;
+using SimpleWebApi.Database.Extensions;
+using SimpleWebApi.Domain.AirPlaneDomain;
+ 
 using SimpleWebApi.Domain.CarDomain.Entities;
 using SimpleWebApi.Dto;
 using SimpleWebApi.Executor;
+using SimpleWebApi.Extensions;
 using SimpleWebApi.Infrastructure.DomainInfra.DbContextBase;
 using SimpleWebApi.Infrastructure.DomainInfra.IdBase;
 using SimpleWebApi.Infrastructure.DomainInfra.RepositoryBase.Implementations;
@@ -22,21 +31,28 @@ using SimpleWebApi.Infrastructure.Exceptions;
 using SimpleWebApi.Infrastructure.Exceptions.Base;
 using SimpleWebApi.Infrastructure.Mapper;
 using SimpleWebApi.Mapper;
-using SimpleWebApi.Requests.Bicycles;
+using SimpleWebApi.Requests.AirPorts;
 using SimpleWebApi.Requests.Cars;
 using SimpleWebApi.Swagger;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.RegisterAggregateHandlers([typeof(Program).Assembly]);
+
 builder.Services.AddMediatR(o => o.RegisterServicesFromAssemblies(typeof(Program).Assembly));
+
 builder.Services.AddScoped<CommandExecutor>();
+
 builder.Services.AddAutoMapper(o =>
 {
-    o.CreateMap<Bicycle, BicycleDto>();
-    o.CreateMap<Car, CarDto>(); 
-    o.CreateMap<AddBicycleCommand, Bicycle>();
+
+    o.CreateMap<Car, CarDto>();
     o.CreateMap<AddCarCommand, Car>();
+
+    o.CreateMap<AirPlane, AirPlaneDto>();
+    o.CreateMap<AddAirPlaneCommand, AirPlane>();
+    o.CreateMap<EditAirPlaneCommand, AirPlane>();
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -47,8 +63,10 @@ builder.Services.AddScoped(typeof(IFullRepository<,>), typeof(FullRepository<,>)
 builder.Services.AddScoped(typeof(IReadRepository<,>), typeof(ReadRepository<,>));
 builder.Services.AddScoped(typeof(IWriteRepository<,>), typeof(WriteRepository<,>));
 
+
+
 var connectionStringBuilder = builder.Configuration.GetSection("Connection").Get<SqlConnectionStringBuilder>();
-builder.Services.AddDbContext<IDbContext,AppDbContext>(o =>
+builder.Services.AddDbContext<IDbContext, AppDbContext>(o =>
 {
     o.UseSqlServer(connectionStringBuilder?.ToString());
 });
@@ -64,7 +82,7 @@ if (app.Environment.IsDevelopment())
             swaggerDoc.FillPaths();
         });
     });
-    app.UseSwaggerUI(x=>x.DocExpansion(DocExpansion.None));
+    app.UseSwaggerUI(x => x.DocExpansion(DocExpansion.None));
 }
 
 app.MapPost("Commands/{commandName}",

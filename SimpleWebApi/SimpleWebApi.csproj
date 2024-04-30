@@ -20,9 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Domain\BicycleDomain\Repositories\" />
     <Folder Include="Domain\CarDomain\Repositories\" />
-    <Folder Include="Extensions\" />
+    <Folder Include="Requests\AirPlane\" />
   </ItemGroup>
 
 </Project>

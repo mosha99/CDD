@@ -9,12 +9,14 @@ using SimpleWebApi.Database.Extensions;
 using SimpleWebApi.Database.ValueComparers;
 using SimpleWebApi.Database.ValueConverters;
 using SimpleWebApi.Database.ValueGenerators;
-using SimpleWebApi.Domain.BicycleDomain.Entities;
+using SimpleWebApi.Domain.AirPlaneDomain;
+ 
 using SimpleWebApi.Domain.CarDomain.Entities;
 using SimpleWebApi.Infrastructure.DomainInfra.AggregateBase;
 using SimpleWebApi.Infrastructure.DomainInfra.DbContextBase;
 using SimpleWebApi.Infrastructure.DomainInfra.EntityBase;
 using SimpleWebApi.Infrastructure.DomainInfra.IdBase;
+ 
 
 namespace SimpleWebApi.Database;
 
@@ -28,8 +30,8 @@ public class AppDbContext : DbContext, IDbContext
     {
 
     }
-    public DbSet<Bicycle>? Bicycles { get; set; }
     public DbSet<Car>? Cars { get; set; }
+    public DbSet<AirPlane>? AirPlanes { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -107,11 +109,11 @@ public class AppDbContext : DbContext, IDbContext
 
         return result;
     }
-
-    async ValueTask IDbContext.AddAsync<TAggregate>(TAggregate aggregate, CancellationToken cancellationToken) where TAggregate : class
+    async ValueTask IWriteDbContext.AddAsync<TAggregate>(TAggregate aggregate, CancellationToken cancellationToken) where TAggregate : class
     {
        await this.AddAsync(aggregate,cancellationToken);
     }
-
-    Task<int> IDbContext.SaveAsync(CancellationToken cancellationToken) => this.SaveChangesAsync(cancellationToken);
+    EntityEntry<TAggregate> IWriteDbContext.UpdateEntity<TAggregate>(TAggregate aggregate) where TAggregate : class 
+        => this.Update(aggregate);
+    Task<int> IWriteDbContext.SaveAsync(CancellationToken cancellationToken) => this.SaveChangesAsync(cancellationToken);
 }

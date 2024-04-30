@@ -8,7 +8,8 @@ using SimpleWebApi.Infrastructure.Response;
 
 namespace SimpleWebApi.Infrastructure.DomainInfra.SpecificationBase.Implementation;
 
-public class DefaultGetSpecification<TAggregate,TDto, TFilter>(BaseListQuery<TAggregate, TFilter> listQuery , ICustomMapper mapper) : IBaseGetListWithMappingSpecification<TAggregate,TDto>
+public class DefaultGetSpecification<TAggregate,TDto, TFilter>
+    (IBaseListQuery<TAggregate, TFilter> listQuery , ICustomMapper mapper) : IBaseGetListWithMappingSpecification<TAggregate,TDto>
     where TFilter : BaseFilter<TAggregate>
 {
     public Task<ListResult<TDto>> GetAllAsync(IQueryable<TAggregate> queryable, CancellationToken cancellationToken)
