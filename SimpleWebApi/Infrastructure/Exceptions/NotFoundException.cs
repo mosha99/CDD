@@ -8,5 +8,5 @@ public class NotFoundException(string? message = "object/objects Not Found") : E
 
     public string GetTitle() => "object/objects Not Found";
 
-    public string GetMessage() => base.Message;
+    public object GetResult() => base.Message;
 }

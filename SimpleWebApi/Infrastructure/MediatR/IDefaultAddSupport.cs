@@ -6,7 +6,7 @@ using SimpleWebApi.Infrastructure.Mapper;
 
 namespace SimpleWebApi.Infrastructure.MediatR;
 
-public interface IDefaultAddSupport<TAggregate, TId> : IDefaultCommand
+public interface IDefaultAddSupport<TAggregate, TId> : IDefaultCommandHandler
     where TId : IdentityBase, IIdentityCreator
     where TAggregate : Aggregate<TId>
 {

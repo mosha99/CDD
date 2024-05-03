@@ -10,7 +10,7 @@ using SimpleWebApi.Infrastructure.Response;
 
 namespace SimpleWebApi.Infrastructure.MediatR;
 
-public interface IDefaultGetAllSupport<TAggregate, TFilter, TDto, TId> : IDefaultCommand
+public interface IDefaultGetAllSupport<TAggregate, TFilter, TDto, TId> : IDefaultCommandHandler
     where TId : IdentityBase, IIdentityCreator
     where TAggregate : Aggregate<TId>
     where TFilter : BaseFilter<TAggregate>

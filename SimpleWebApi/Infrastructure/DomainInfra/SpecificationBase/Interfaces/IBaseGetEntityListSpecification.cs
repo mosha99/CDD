@@ -5,5 +5,5 @@ namespace SimpleWebApi.Infrastructure.DomainInfra.SpecificationBase.Interfaces;
 
 public interface IBaseGetEntityListSpecification<TResult>
 {
-    public Task<ListResult<TResult>> GetAllAsync(IDbContext queryable, CancellationToken cancellationToken);
+    public Task<ListResult<TResult>> GetAllAsync(IReadDbContext queryable, CancellationToken cancellationToken);
 }

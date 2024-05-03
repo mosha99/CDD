@@ -4,5 +4,5 @@ public interface IException
 {
     public int GetStatsCode();
     public string GetTitle();
-    public string GetMessage();
+    public object GetResult();
 }

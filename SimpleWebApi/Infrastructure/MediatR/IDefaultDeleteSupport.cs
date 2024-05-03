@@ -6,7 +6,7 @@ using SimpleWebApi.Infrastructure.Mapper;
 
 namespace SimpleWebApi.Infrastructure.MediatR;
 
-public interface IDefaultDeleteSupport<TAggregate, TId> : IDefaultCommand
+public interface IDefaultDeleteSupport<TAggregate, TId> : IDefaultCommandHandler
     where TId : IdentityBase, IIdentityCreator
     where TAggregate : Aggregate<TId>
 {

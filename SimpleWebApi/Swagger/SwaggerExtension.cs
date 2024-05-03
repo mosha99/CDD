@@ -1,8 +1,13 @@
+using System.Diagnostics;
+using System.Reflection;
 using MediatR;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using SimpleWebApi.Database.Extensions;
+using SimpleWebApi.Infrastructure.Attributes;
+using SimpleWebApi.Infrastructure.Enum;
 using SimpleWebApi.Infrastructure.Exceptions.Base;
+using SimpleWebApi.Requests.AirPlane;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace SimpleWebApi.Swagger;
@@ -14,31 +19,37 @@ public static class SwaggerExtension
     private static List<Type> _types = [];
 
 
-    public static void InitTypes(params Type[] flags)
+    public static void InitTypes(params Assembly[] assemblies)
     {
-        _types = flags?.SelectMany(x => x.Assembly.GetTypes())
+        _types = assemblies?.SelectMany(x => x.GetTypes())
             ?.Where(x => x is { IsClass: true, IsAbstract: false } && typeof(IBaseRequest).IsAssignableFrom(x))?.ToList() ?? [];
     }
 
 
-    public static void GenerateSchema(this DocumentFilterContext context)
+    public static void GenerateSchema(this DocumentFilterContext? context)
     {
+        _context = context;
         foreach (var type in _types)
         {
-            GetOrAddTypeToSchema(context, GetResponseType(type));
-            GetOrAddTypeToSchema(context, type);
+            GetOrAddTypeToSchema(GetResponseType(type));
+            GetOrAddTypeToSchema(type);
         }
 
-        GetOrAddTypeToSchema(context, typeof(string));
+        GetOrAddTypeToSchema(typeof(string));
+
+
     }
 
-    private static void GetOrAddTypeToSchema(DocumentFilterContext context, Type? type)
+    private static DocumentFilterContext? _context;
+    private static void GetOrAddTypeToSchema(Type? type)
     {
-        if (type is null || ApiSchemata.Any(x=>x.Key == type) ) return;
+        if (type is null || ApiSchemata.Any(x => x.Key == type)) return;
 
-        var schema = context.SchemaGenerator.GenerateSchema(type, context.SchemaRepository);
+        var schema = _context!.SchemaGenerator.GenerateSchema(type, _context.SchemaRepository);
 
         ApiSchemata.TryAdd(type, schema);
+        _context.SchemaRepository.Schemas.TryAdd(type.Name, schema);
+
     }
 
     private static Type? GetResponseType(Type type)
@@ -59,35 +70,130 @@ public static class SwaggerExtension
             document.AddPath(type);
         }
     }
-    private static void AddPath(this OpenApiDocument document, Type request)
+    public static OperationType TranslateHttpMethod(HttpMethodEnum method)
     {
+        return method switch
+        {
+            HttpMethodEnum.Post => OperationType.Post,
+            HttpMethodEnum.Get => OperationType.Get,
+            HttpMethodEnum.Put => OperationType.Put,
+            HttpMethodEnum.Delete => OperationType.Delete,
+            _ => OperationType.Post
+        };
+    }
+
+    public static OperationType GetOperationType(Type requestType)
+    {
+        var httpMethod = requestType.GetCustomAttribute<HttpMethodAttribute>()?.Method ?? HttpMethodEnum.Post;
+        return TranslateHttpMethod(httpMethod);
+    }
+
+    private static Dictionary<PropertyInfo, int>? _pathParameter;
+    private static List<PropertyInfo>? _queryParameter;
+    private static OperationType _operationType;
+    private static void AddPath(this OpenApiDocument document, Type requestType)
+    {
+        var path = RutePathFactory(requestType);
+
+        _operationType = GetOperationType(requestType);
+
+
+
         OpenApiPathItem pathItem = new()
         {
             Operations = new Dictionary<OperationType, OpenApiOperation>()
         };
 
-        var responseType = GetResponseType(request);
+        var responseType = GetResponseType(requestType);
 
-        var group = request!.Namespace!.Split('.').Last();
+        var group = requestType!.Namespace!.Split('.').Last();
 
         var operation = new OpenApiOperation()
         {
             Tags = [new OpenApiTag() { Name = group }],
-            RequestBody = CreateRequestBody(request),
+            RequestBody = CreateRequestBody(requestType),
             Responses = CreateResponse(responseType)
         };
 
-        pathItem.Operations.Add(OperationType.Post, operation);
+        pathItem.Operations.Add(_operationType, operation);
 
-        pathItem.Parameters = [CreateHeader("NameSpace", request.Namespace)];
+        pathItem.Parameters = 
+            [
+                CreateHeader("NameSpace", requestType.Namespace),
+                ..CreatesPathParameter()
+            ];
 
-        document.Paths.Add($"/Commands/{request.Name}", pathItem);
+        document.Paths.Add(path, pathItem);
     }
+
+    private static List<OpenApiParameter> CreatesPathParameter()
+    {
+        var result = new List<OpenApiParameter>();
+
+        foreach (var item in _pathParameter!)
+        {
+            GetOrAddTypeToSchema(item.Key.PropertyType);
+
+            ApiSchemata.TryGetValue(item.Key.PropertyType, out var schema);
+
+            var param = new OpenApiParameter()
+            {
+                In = ParameterLocation.Path ,
+                Name = item.Key.Name,
+                Schema = schema,
+                Required = true,
+            };
+
+            result.Add(param);
+        }     
+        
+        foreach (var item in _queryParameter!)
+        {
+            GetOrAddTypeToSchema(item.PropertyType);
+
+            ApiSchemata.TryGetValue(item.PropertyType, out var schema);
+
+            var param = new OpenApiParameter()
+            {
+                In = ParameterLocation.Query,
+                Name = item.Name,
+                Schema = schema,
+                Required = true,
+            };
+
+            result.Add(param);
+        }
+
+        return result;
+    }
+
+    public static string RutePathFactory(Type requestType)
+    {
+        string result = $"/Commands/{requestType.Name}";
+
+        _pathParameter = requestType.GetProperties()
+             .Where(x => x.GetCustomAttribute<FromPathAttribute>() != null)
+             .ToDictionary(x => x, y => y.GetCustomAttribute<FromPathAttribute>()!.Index);
+
+
+        _queryParameter = requestType.GetProperties()
+             .Where(x => x.GetCustomAttribute<FromQueryStringAttribute>() != null).ToList();
+
+
+        foreach (var item in _pathParameter.OrderBy(x => x.Value))
+        {
+            result += $"/{{{item.Key.Name}}}";
+        }
+
+        return result;
+    }
+
     private static OpenApiResponses? CreateResponse(Type? responseType = null, string code = "200", string description = "Success")
     {
         if (responseType is null) return null;
 
         var response = new OpenApiResponses();
+
         ApiSchemata.TryGetValue(responseType, out var schema);
 
         response.Add(code, new OpenApiResponse()
@@ -107,7 +213,7 @@ public static class SwaggerExtension
 
     private static OpenApiRequestBody? CreateRequestBody(Type? responseType, string? description = null)
     {
-        if (responseType is null) return null;
+        if (responseType is null || _operationType is OperationType.Get || _operationType is OperationType.Delete) return null;
         ApiSchemata.TryGetValue(responseType, out var schema);
 
         var response = new OpenApiRequestBody()

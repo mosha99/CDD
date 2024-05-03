@@ -12,8 +12,8 @@ public static class AggregateHandlerExtension
     {
         List<Type> allTypes = assemblies.SelectMany(x => x.GetTypes()).ToList();
 
-        var types = allTypes.Where( x=> typeof(IDefaultCommand).IsAssignableFrom(x) && x is { IsClass: true, IsAbstract: false })
-            .SelectMany(x => x.GetInterfaces().Where(typeof(IDefaultCommand).IsAssignableFrom).Where(type => type.IsGenericType)).ToList();
+        var types = allTypes.Where( x=> typeof(IDefaultCommandHandler).IsAssignableFrom(x) && x is { IsClass: true, IsAbstract: false })
+            .SelectMany(x => x.GetInterfaces().Where(typeof(IDefaultCommandHandler).IsAssignableFrom).Where(type => type.IsGenericType)).ToList();
 
         foreach (var type in types)
         {

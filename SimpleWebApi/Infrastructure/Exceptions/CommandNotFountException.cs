@@ -8,5 +8,5 @@ public class CommandNotFountException(string message = "Command Not Fount") : Ex
 
     public string GetTitle() => "Command Not Fount";
 
-    public string GetMessage() => base.Message;
+    public object GetResult() => base.Message;
 }

@@ -7,5 +7,5 @@ public class UnexpectedException() : Exception("Internal Server Error"), IExcept
     public int GetStatsCode() => 500;
     public string GetTitle() => "Internal Server Error";
 
-    public string GetMessage() => base.Message;
+    public object GetResult() => base.Message;
 }

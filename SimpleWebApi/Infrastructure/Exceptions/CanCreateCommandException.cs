@@ -2,11 +2,11 @@
 
 namespace SimpleWebApi.Infrastructure.Exceptions;
 
-public class CanNotDeserializeCommandException(string message = "Can Not Deserialize Command") : Exception(message), IException
+public class CanCreateCommandException(string message = "Can Not Create Command") : Exception(message), IException
 {
     public int GetStatsCode() => 422;
 
-    public string GetTitle() => "Invalid Command Signature";
+    public string GetTitle() => "Can Not Create Command";
 
     public object GetResult() => base.Message;
 }

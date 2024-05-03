@@ -1,3 +1,3 @@
 ﻿namespace SimpleWebApi.Infrastructure.MediatR;
 
-public interface IDefaultCommand;
+public interface IDefaultCommandHandler;

@@ -17,5 +17,5 @@ public class InvalidNumberForCreateIdException : Exception, IException
 
     public string GetTitle() => "Internal Server Error";
 
-    public string GetMessage() => base.Message;
+    public object GetResult() => base.Message;
 }

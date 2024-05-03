@@ -10,11 +10,11 @@ using SimpleWebApi.Infrastructure.Response;
 
 namespace SimpleWebApi.Infrastructure.DomainInfra.RepositoryBase.Implementations;
 
-public class ReadRepository<TAggregate, TId>(IDbContext dataBaseContext) : IReadRepository<TAggregate, TId>
+public class ReadRepository<TAggregate, TId>(IReadDbContext dataBaseContext) : IReadRepository<TAggregate, TId>
     where TId : IdentityBase, IIdentityCreator
     where TAggregate : Aggregate<TId>
 {
-    protected readonly IDbContext DataBaseContext = dataBaseContext;
+    protected readonly IReadDbContext DataBaseContext = dataBaseContext;
     public async Task<TAggregate> GetByIdAsync(TId id, bool track = false, CancellationToken cancellationToken = new CancellationToken())
     {
         return await DataBaseContext.EntitySet<TAggregate>(track)
